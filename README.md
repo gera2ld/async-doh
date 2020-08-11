@@ -16,13 +16,15 @@ $ pip install async-doh
 
 ```py
 import asyncio
+import aiohttp
 from async_doh.client import query, query_json
 
 async def main():
-    result = await query('https://1.1.1.1/dns-query', 'www.google.com', 'A')
-    print('query:', result)
-    result = await query_json('https://1.1.1.1/dns-query', 'www.google.com', 'A')
-    print('query_json:', result)
+    async with DoHClient() as client:
+        result = await client.query('https://1.1.1.1/dns-query', 'www.google.com', 'A')
+        print('query:', result)
+        result = await client.query_json('https://1.1.1.1/dns-query', 'www.google.com', 'A')
+        print('query_json:', result)
 
 asyncio.run(main())
 ```
@@ -37,3 +39,7 @@ web.run(application)
 ```
 
 Now you have `http://localhost:8080/dns-query` as an endpoint.
+
+## References
+
+- <https://tools.ietf.org/html/rfc8484>
