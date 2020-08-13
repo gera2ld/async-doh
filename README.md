@@ -44,14 +44,19 @@ Now you have `http://localhost:8080/dns-query` as an endpoint.
 
 By importing the patch, async_dns will support queries throught HTTPS (aka DNS over HTTPS):
 
-```
-import async_doh.patch_resolver
+```py
 import asyncio
 from async_dns import types
 from async_dns.resolver import ProxyResolver
+from async_doh.resolver_patch import patch
 
-resolver = ProxyResolver(proxies=['https://dns.alidns.com/dns-query'])
-print(asyncio.run(resolver.query('www.google.com', types.A)))
+async def main():
+  revoke = await patch()
+  resolver = ProxyResolver(proxies=['https://dns.alidns.com/dns-query'])
+  print(resolver.query('www.google.com', types.A))
+  await revoke()
+
+asyncio.run(main())
 ```
 
 ## References
