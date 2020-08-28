@@ -17,7 +17,7 @@ $ pip install async-doh
 ```py
 import asyncio
 import aiohttp
-from async_doh.client import query, query_json
+from async_doh.client import DoHClient
 
 async def main():
     async with DoHClient() as client:
