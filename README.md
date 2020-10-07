@@ -12,6 +12,30 @@ $ pip install async-doh
 
 ## Usage
 
+### Command-line
+
+```
+usage: python3 -m async_doh [-h] [-n NAMESERVERS [NAMESERVERS ...]] [-t TYPES [TYPES ...]] hostnames [hostnames ...]
+
+Async DNS resolver with DoH
+
+positional arguments:
+  hostnames             the hostnames to query
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n NAMESERVERS [NAMESERVERS ...], --nameservers NAMESERVERS [NAMESERVERS ...]
+                        name servers
+  -t TYPES [TYPES ...], --types TYPES [TYPES ...]
+                        query types, default as `any`
+```
+
+Examples:
+
+```sh
+$ python3 -m async_doh -n https://223.5.5.5/dns-query -t ANY -- www.google.com
+```
+
 ### Client
 
 ```py

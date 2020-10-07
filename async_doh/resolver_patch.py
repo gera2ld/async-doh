@@ -14,13 +14,3 @@ async def patch(method='POST'):
         Query.protocols.pop('https', None)
         await client.__aexit__(None, None, None)
     return revoke
-
-if __name__ == '__main__':
-    from async_dns import types
-    from async_dns.resolver import ProxyResolver
-    async def main():
-        revoke = await patch()
-        resolver = ProxyResolver(proxies=['https://dns.alidns.com/dns-query'])
-        print('query:', await resolver.query('www.google.com', types.A))
-        await revoke()
-    asyncio.run(main())
