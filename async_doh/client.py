@@ -2,6 +2,7 @@ import aiohttp
 import asyncio
 import base64
 from async_dns import DNSMessage, REQUEST, Record, types
+from .session import create_session
 
 class DoHClient:
     session = None
@@ -9,7 +10,7 @@ class DoHClient:
 
     async def __aenter__(self):
         if self._session_task is None:
-            self._session_task = asyncio.create_task(aiohttp.ClientSession().__aenter__())
+            self._session_task = asyncio.create_task(create_session().__aenter__())
             self.session = await self._session_task
         return self
 
