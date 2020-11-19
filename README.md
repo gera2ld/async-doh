@@ -75,10 +75,10 @@ from async_dns.resolver import ProxyResolver
 from async_doh.resolver_patch import patch
 
 async def main():
-  revoke = await patch()
-  resolver = ProxyResolver(proxies=['https://dns.alidns.com/dns-query'])
-  print(resolver.query('www.google.com', types.A))
-  await revoke()
+    revoke = await patch()
+    resolver = ProxyResolver(proxies=['https://dns.alidns.com/dns-query'])
+    print(resolver.query('www.google.com', types.A))
+    await revoke()
 
 asyncio.run(main())
 ```
