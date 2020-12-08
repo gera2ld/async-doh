@@ -2,11 +2,11 @@ import argparse
 import asyncio
 from async_dns.core import *
 from async_dns.resolver import ProxyResolver
-from async_doh.resolver_patch import patch
+from . import patch
 
 def _parse_args():
     parser = argparse.ArgumentParser(
-        prog='python3 -m async_doh',
+        prog='python3 -m async_doh.client',
         description='Async DNS resolver with DoH')
     parser.add_argument('hostnames', nargs='+', help='the hostnames to query')
     parser.add_argument('-n', '--nameservers', nargs='+', help='name servers')

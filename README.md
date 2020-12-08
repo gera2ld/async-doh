@@ -15,7 +15,7 @@ $ pip install async-doh
 ### Command-line
 
 ```
-usage: python3 -m async_doh [-h] [-n NAMESERVERS [NAMESERVERS ...]] [-t TYPES [TYPES ...]] hostnames [hostnames ...]
+usage: python3 -m async_doh.client [-h] [-n NAMESERVERS [NAMESERVERS ...]] [-t TYPES [TYPES ...]] hostnames [hostnames ...]
 
 Async DNS resolver with DoH
 
@@ -33,7 +33,7 @@ optional arguments:
 Examples:
 
 ```sh
-$ python3 -m async_doh -n https://223.5.5.5/dns-query -t ANY -- www.google.com
+$ python3 -m async_doh.client -n https://223.5.5.5/dns-query -t ANY -- www.google.com
 ```
 
 ### Client
@@ -72,7 +72,7 @@ By importing the patch, async_dns will support queries throught HTTPS (aka DNS o
 import asyncio
 from async_dns import types
 from async_dns.resolver import ProxyResolver
-from async_doh.resolver_patch import patch
+from async_doh.client import patch
 
 async def main():
     revoke = await patch()

@@ -78,7 +78,3 @@ async def doh(request):
 
 application = web.Application()
 application.add_routes(routes)
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    web.run_app(application)
