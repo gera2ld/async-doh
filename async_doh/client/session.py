@@ -1,23 +1,29 @@
 import asyncio
 import socket
 from typing import Any, Dict, List, Optional
-from aiohttp import web, TCPConnector, ClientSession
+
+from aiohttp import ClientSession, TCPConnector
 from aiohttp.abc import AbstractResolver
 from aiohttp.helpers import get_running_loop
-from async_dns import types
+from async_dns.core import types
 
 _resolver = None
+
 
 def set_resolver(resolver):
     global _resolver
     _resolver = resolver
 
+
 class AsyncResolver(AbstractResolver):
-    def __init__(self, loop: Optional[asyncio.AbstractEventLoop]=None) -> None:
+    def __init__(self,
+                 loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
         self._loop = get_running_loop(loop)
 
-    async def resolve(self, host: str, port: int=0,
-                      family: int=socket.AF_INET) -> List[Dict[str, Any]]:
+    async def resolve(self,
+                      host: str,
+                      port: int = 0,
+                      family: int = socket.AF_INET) -> List[Dict[str, Any]]:
         if family == socket.AF_INET:
             qtype = types.A
         elif family == socket.AF_INET6:
@@ -29,11 +35,12 @@ class AsyncResolver(AbstractResolver):
         if res:
             for item in res.an:
                 if item.qtype in (types.A, types.AAAA):
+                    family = socket.AF_INET if item.qtype == types.A else socket.AF_INET6
                     hosts.append({
                         'hostname': host,
                         'host': item.data,
                         'port': port,
-                        'family': socket.AF_INET if item.qtype == types.A else socket.AF_INET6,
+                        'family': family,
                         'proto': 0,
                         'flags': socket.AI_NUMERICHOST,
                     })
@@ -41,6 +48,7 @@ class AsyncResolver(AbstractResolver):
 
     async def close(self) -> None:
         pass
+
 
 def create_session():
     if _resolver is None:

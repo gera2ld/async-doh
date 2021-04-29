@@ -6,7 +6,7 @@ DNS over HTTPS based on aiohttp and [async_dns](https://github.com/gera2ld/async
 
 ## Installation
 
-```sh
+```bash
 $ pip install async-doh
 ```
 
@@ -70,14 +70,15 @@ By importing the patch, async_dns will support queries throught HTTPS (aka DNS o
 
 ```py
 import asyncio
-from async_dns import types
+from async_dns.core import types
 from async_dns.resolver import ProxyResolver
 from async_doh.client import patch
 
 async def main():
     revoke = await patch()
     resolver = ProxyResolver(proxies=['https://dns.alidns.com/dns-query'])
-    print(resolver.query('www.google.com', types.A))
+    res, _ = await resolver.query('www.google.com', types.A)
+    print(res)
     await revoke()
 
 asyncio.run(main())

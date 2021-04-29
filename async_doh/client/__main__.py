@@ -1,19 +1,24 @@
 import argparse
 import asyncio
-from async_dns.core import *
+
+from async_dns.core import Address, DNSMessage, REQUEST, Record, logger, types
 from async_dns.resolver import ProxyResolver
+
 from . import patch
 
+
 def _parse_args():
-    parser = argparse.ArgumentParser(
-        prog='python3 -m async_doh.client',
-        description='Async DNS resolver with DoH')
+    parser = argparse.ArgumentParser(prog='python3 -m async_doh.client',
+                                     description='Async DNS resolver with DoH')
     parser.add_argument('hostnames', nargs='+', help='the hostnames to query')
     parser.add_argument('-n', '--nameservers', nargs='+', help='name servers')
-    parser.add_argument(
-        '-t', '--types', nargs='+', default=['any'],
-        help='query types, default as `any`')
+    parser.add_argument('-t',
+                        '--types',
+                        nargs='+',
+                        default=['any'],
+                        help='query types, default as `any`')
     return parser.parse_args()
+
 
 async def resolve_hostname(resolver, hostname, qtype):
     '''Resolve a hostname with the given resolver.'''
@@ -25,6 +30,7 @@ async def resolve_hostname(resolver, hostname, qtype):
         res.qd.append(Record(REQUEST, name=hostname, qtype=addr.ip_type))
         res.an.append(Record(qtype=addr.ip_type, data=hostname))
         return res
+
 
 async def resolve_hostnames(args):
     '''Resolve hostnames passed from process arguments.'''
@@ -38,7 +44,9 @@ async def resolve_hostnames(args):
             if qtype is None:
                 logger.warn('Unknown type: %s', qtype_name)
                 continue
-            results.append(asyncio.create_task(resolve_hostname(resolver, hostname, qtype)))
+            results.append(
+                asyncio.create_task(resolve_hostname(resolver, hostname,
+                                                     qtype)))
     done, _ = await asyncio.wait(results, timeout=3)
     for fut in done:
         res = fut.result()
@@ -50,10 +58,12 @@ async def resolve_hostnames(args):
                 item.data,
             ))
 
+
 async def main():
     args = _parse_args()
     revoke = await patch()
     await resolve_hostnames(args)
     await revoke()
+
 
 asyncio.run(main())

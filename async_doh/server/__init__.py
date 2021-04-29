@@ -1,15 +1,18 @@
 import base64
 import logging
+
 from aiohttp import web
-from async_dns import types, DNSMessage, get_nameservers
-from async_dns.resolver import ProxyResolver
+from async_dns.core import DNSMessage, get_nameservers, types
+from async_dns.resolver import BaseResolver, ProxyResolver
 
 routes = web.RouteTableDef()
 resolver = ProxyResolver(proxies=get_nameservers())
 
-def set_resolver(_resolver):
+
+def set_resolver(_resolver: BaseResolver):
     global resolver
     resolver = _resolver
+
 
 async def handle_json_api(request):
     '''JSON API for DNS over HTTPS
@@ -22,11 +25,17 @@ async def handle_json_api(request):
     name = request.query.get('name')
     type = request.query.get('type', 'A')
     cd = request.query.get('cd') in ('1', 'true')
-    ct = request.query.get('ct')
+    # ct = request.query.get('ct')
     qtype = types.get_code(type)
     assert qtype is not None, web.HTTPBadRequest
-    result = await resolver.query(name, qtype)
-    assert result is not None, web.HTTPInternalServerError
+    result, _ = await resolver.query(name, qtype)
+    question = [{'name': name, 'type': qtype}]
+    answers = [{
+        'name': item.name,
+        'type': item.qtype,
+        'TTL': item.ttl,
+        'data': item.data
+    } for item in result.an]
     data = {
         'Status': result.r,
         'TC': result.tc,
@@ -34,16 +43,13 @@ async def handle_json_api(request):
         'RA': result.ra,
         'AD': False,
         'CD': cd,
-        'Question': [
-            { 'name': name, 'type': qtype },
-        ],
-        'Answer': [
-            { 'name': item.name, 'type': item.qtype, 'TTL': item.ttl, 'data': item.data }
-            for item in result.an
-        ],
+        'Question': question,
+        'Answer': answers,
     }
-    logging.info('[JSON][%s] %s %s %d', request.method, name, types.get_name(qtype), result.r)
+    logging.info('[JSON][%s] %s %s %d', request.method, name,
+                 types.get_name(qtype), result.r)
     return web.json_response(data, content_type=accept)
+
 
 async def handle_message_api(request):
     accept = request.headers.get('accept')
@@ -54,16 +60,20 @@ async def handle_message_api(request):
         dns = base64.urlsafe_b64decode(dns)
     else:
         assert request.method == 'POST', web.HTTPMethodNotAllowed
-        assert request.headers.get('content-type') == 'application/dns-message', web.HTTPBadRequest
+        assert request.headers.get(
+            'content-type') == 'application/dns-message', web.HTTPBadRequest
         dns = await request.read()
     msg = DNSMessage.parse(dns)
     for question in msg.qd:
-        result = await resolver.query(question.name, question.qtype)
+        result, _ = await resolver.query(question.name, question.qtype)
         result.qid = msg.qid
         data = result.pack()
-        logging.info('[MSG][%s] %s %s %d', request.method, question.name, types.get_name(question.qtype), result.r)
-        break   # only one question is supported
-    return web.Response(body=data)
+        logging.info('[MSG][%s] %s %s %d', request.method, question.name,
+                     types.get_name(question.qtype), result.r)
+        # only one question is supported
+        return web.Response(body=data)
+    raise web.HTTPInternalServerError
+
 
 @routes.get('/dns-query')
 @routes.post('/dns-query')
@@ -75,6 +85,7 @@ async def doh(request):
         return await handle_message_api(request)
     else:
         raise web.HTTPBadRequest
+
 
 application = web.Application()
 application.add_routes(routes)
