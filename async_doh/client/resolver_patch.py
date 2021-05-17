@@ -22,12 +22,16 @@ async def patch(method='POST', resolver=None):
     if resolver is not None:
         set_resolver(resolver)
     client = await DoHClient().__aenter__()
+    https_request = DNSClient.protocols.get('https')
     DNSClient.protocols['https'] = partial(_request_https,
                                            client,
                                            method=method)
 
     async def revoke():
-        DNSClient.protocols.pop('https', None)
+        if https_request is None:
+            DNSClient.protocols.pop('https', None)
+        else:
+            DNSClient.protocols['https'] = https_request
         await client.__aexit__(None, None, None)
 
     return revoke

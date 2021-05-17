@@ -66,7 +66,7 @@ Now you have `http://localhost:8080/dns-query` as an endpoint.
 
 ### Patching async_dns
 
-By importing the patch, async_dns will support queries throught HTTPS (aka DNS over HTTPS):
+By importing the patch, async_dns will use aiohttp to send queries through HTTPS (aka DNS over HTTPS):
 
 ```py
 import asyncio
