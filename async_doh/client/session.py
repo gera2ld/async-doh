@@ -52,7 +52,7 @@ class AsyncResolver(AbstractResolver):
 
 def create_session():
     if _resolver is None:
-        return ClientSession()
+        return ClientSession(trust_env=True)
     resolver = AsyncResolver()
     connector = TCPConnector(force_close=True, resolver=resolver)
     return ClientSession(connector=connector)
