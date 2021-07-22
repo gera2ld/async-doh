@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "async-doh"
-version = "0.3.0-alpha.0"
+version = "0.3.0"
 description = "DNS over HTTPS based on aiohttp and async_dns"
 authors = ["Gerald <gera2ld@live.com>"]
 license = "MIT"
