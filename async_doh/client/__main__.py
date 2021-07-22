@@ -1,7 +1,15 @@
 import argparse
 import asyncio
 
-from async_dns.core import Address, DNSMessage, REQUEST, Record, logger, types
+from async_dns.core import (
+    Address,
+    DNSMessage,
+    REQUEST,
+    Record,
+    create_rdata,
+    logger,
+    types,
+)
 from async_dns.resolver import ProxyResolver
 
 from . import patch
@@ -20,16 +28,18 @@ def _parse_args():
     return parser.parse_args()
 
 
-async def resolve_hostname(resolver, hostname, qtype):
+async def resolve_hostname(resolver: ProxyResolver, hostname: str, qtype: int):
     '''Resolve a hostname with the given resolver.'''
     addr = Address.parse(hostname, allow_domain=True)
     if addr.ip_type is None:
-        return await resolver.query(hostname, qtype)
+        res, _ = await resolver.query(hostname, qtype)
     else:
         res = DNSMessage()
         res.qd.append(Record(REQUEST, name=hostname, qtype=addr.ip_type))
-        res.an.append(Record(qtype=addr.ip_type, data=hostname))
-        return res
+        res.an.append(
+            Record(qtype=addr.ip_type,
+                   data=create_rdata(addr.ip_type, hostname)))
+    return res
 
 
 async def resolve_hostnames(args):
